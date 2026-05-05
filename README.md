@@ -53,7 +53,7 @@ ucimlrepo tenseal==0.3.16 scikit-learn==1.5.0 matplotlib seaborn
 
 Running the Framework
 # Open and execute the main notebook
-jupyter notebook satml-2026.ipynb
+jupyter notebook CIBB'26.ipynb
 
 # Or run specific analyses directly
 python run_analysis.py --analysis baseline_comparison
@@ -82,7 +82,7 @@ privacy_metrics = fl_framework.evaluate_privacy()
 performance_metrics = fl_framework.evaluate_performance()
 
 MedHE/
-├── satml-2026.ipynb              # Main implementation notebook
+├── CIBB'26.ipynb             # Main implementation notebook
 ├── medhe_framework/              # Framework source code
 │   ├── __init__.py
 │   ├── federated_learning.py     # Core FL implementation
@@ -90,7 +90,7 @@ MedHE/
 │   ├── sparsification.py        # Adaptive gradient sparsification
 │   └── security_analysis.py     # Privacy attack evaluation
 ├── papers/
-│   ├── medhe_satml2026.pdf      # Conference paper
+│   ├── medhe_CIBB'26.ipynb.pdf      # Conference paper
 │   └── medhe_technical.pdf      # Technical report
 ├── results/                     # Experimental results
 │   ├── communication_analysis.png
@@ -176,12 +176,20 @@ Hardware Acceleration: FPGA/GPU optimization for CKKS operations
 📚 Citation
 
 If you use MedHE in your research, please cite our SATML 2026 paper:
-@inproceedings{medhe2026,
-  title={MedHE: Communication-Efficient Privacy-Preserving Federated Learning with Adaptive Gradient Sparsification},
-  author={Farjana Yesmin},
-  booktitle={IEEE Conference on Secure and Trustworthy Machine Learning (SATML)},
-  year={2026},
-  pages={1--10}
+@article{DBLP:journals/corr/abs-2511-09043,
+  author       = {Farjana Yesmin},
+  title        = {MedHE: Communication-Efficient Privacy-Preserving Federated Learning
+                  with Adaptive Gradient Sparsification for Healthcare},
+  journal      = {CoRR},
+  volume       = {abs/2511.09043},
+  year         = {2025},
+  url          = {https://doi.org/10.48550/arXiv.2511.09043},
+  doi          = {10.48550/ARXIV.2511.09043},
+  eprinttype   = {arXiv},
+  eprint       = {2511.09043},
+  timestamp    = {Sun, 04 Jan 2026 00:00:00 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2511-09043.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
 🤝 Contributing
