@@ -1,213 +1,185 @@
-# MedHE: Communication-Efficient Privacy-Preserving Federated Learning with Adaptive Gradient Sparsification
+# MedHE: Communication-Efficient Privacy-Preserving Federated Learning for Healthcare
 
-![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.3.0-red.svg)
-![TenSEAL](https://img.shields.io/badge/TenSEAL-0.3.16-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![PyTorch 2.3](https://img.shields.io/badge/PyTorch-2.3.0-orange.svg)](https://pytorch.org/)
+[![arXiv](https://img.shields.io/badge/arXiv-2511.09043-b31b1b.svg)](https://arxiv.org/abs/2511.09043)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**MedHE** is a novel federated learning framework that integrates adaptive gradient sparsification with CKKS homomorphic encryption to enable privacy-preserving collaborative learning on sensitive healthcare data. This implementation demonstrates state-of-the-art results in healthcare NLP while maintaining strong privacy guarantees.
+Official implementation of:
 
-## 📖 Paper Abstract
-Healthcare federated learning requires strong privacy guarantees while maintaining computational efficiency across resource-constrained medical institutions. MedHE introduces a dynamic threshold mechanism for top-k gradient selection, achieving **90% communication reduction** while preserving model utility. Our approach provides formal security proofs under RLWE assumptions and demonstrates **differential privacy guarantees with ε ≤ 1.5**. Comprehensive evaluation shows strong privacy preservation against five attack vectors with **membership inference attack success rates near random guessing (50.1%)**.
+> Yesmin, F. (2026). *MedHE: Communication-Efficient Privacy-Preserving Federated
+> Learning with Adaptive Gradient Sparsification for Healthcare.*
+> Under review, CIBB 2026.
+> Preprint: [arXiv:2511.09043](https://arxiv.org/abs/2511.09043)
 
-## 🚀 Key Features
+Part of the [FairHealth](https://github.com/Farjana-Yesmin/fairhealth) library —
+`pip install fairhealth`
 
-### 🔒 Privacy & Security
-- **Homomorphic Encryption**: CKKS implementation with semantic security guarantees
-- **Adaptive Gradient Sparsification**: Dynamic top-k selection with 90% compression
-- **Formal Security Proofs**: RLWE-based security analysis and differential privacy
-- **Attack Resistance**: Comprehensive evaluation against 5 attack vectors
+---
 
-### ⚡ Performance
-- **91.1% Accuracy** on healthcare text classification
-- **90% Communication Reduction** vs standard federated learning
-- **54% Computational Overhead** with linear scalability to 100+ clients
-- **HIPAA Compliance** ready for real-world healthcare deployment
+## What MedHE Does
 
-### 🏥 Healthcare Focus
-- **Drug Review Analysis**: UCI Drug Review dataset (4,142 samples)
-- **DistilBERT Integration**: Efficient transformer model for medical NLP
-- **Non-IID Robustness**: Realistic medical institution data distribution
+MedHE co-designs **adaptive gradient sparsification** with **CKKS homomorphic
+encryption** for privacy-preserving healthcare NLP. Applied to binary drug
+effectiveness classification using DistilBERT across 5 federated clients, MedHE:
 
-## 📊 Results Summary
+- Reduces communication from **1,277 MB → 32 MB** (97.5% reduction)
+- Maintains **macro-F1 = 0.950 ± 0.005** (statistically equivalent to standard FL, p=0.32)
+- Achieves **MIA resistance of 51.1%** (near-random; ideal = 50%)
+- Satisfies **differential privacy** with ε ≤ 1.0, δ = 1×10⁻⁵
 
-| Metric | Result |
-|--------|---------|
-| Accuracy | 91.1% |
-| F1 Score | 0.950 |
-| Communication Reduction | 90% |
-| MIA Success Rate | 50.1% (≈ random) |
-| Differential Privacy ε | 1.500 |
-| Training Overhead | +54% |
+---
 
-## 🛠️ Quick Start
+## Results
 
-### Installation
+### Performance Comparison (5 independent trials, mean ± std)
 
-git clone https://github.com/Farjana-Yesmin/MedHE.git
-cd MedHE
+| Method | Macro-F1 | Accuracy | Communication (MB) |
+|---|---|---|---|
+| Standard FedAvg | 0.944 ± 0.006 | 89.9 ± 0.7% | 1,277 |
+| HE-only FL | 0.714 ± 0.126 | 90.4 ± 2.2% | 1,490 |
+| **MedHE (ours)** | **0.950 ± 0.005** | **89.5 ± 0.8%** | **32** |
 
-# Install dependencies
-pip install transformers==4.41.2 torch==2.3.0 pandas==2.2.2 \
-ucimlrepo tenseal==0.3.16 scikit-learn==1.5.0 matplotlib seaborn
+MedHE vs Standard FedAvg: p=0.32 (not significant) — accuracy preserved.
+HE-only FL collapses to majority-class bias (F1=0.714) without sparsification.
 
-Running the Framework
-# Open and execute the main notebook
-jupyter notebook CIBB'26.ipynb
+### Privacy Evaluation (Membership Inference Attacks)
 
-# Or run specific analyses directly
-python run_analysis.py --analysis baseline_comparison
-python run_analysis.py --analysis privacy_evaluation
+| Method | Worst-case MIA Rate | Privacy Level |
+|---|---|---|
+| Random guessing (ideal) | 50.0% | Perfect |
+| **MedHE (ours)** | **51.1%** | **Strong** |
+| Standard FedAvg | 56.3% | Weak |
 
-Basic Usage
-from medhe_framework import MedHEFL
+### Ablation Study
 
-# Initialize MedHE framework
-fl_framework = MedHEFL(
-    model_name='distilbert-base-uncased',
-    num_clients=5,
-    sparsity_level=0.9,
-    encryption_enabled=True
+| Configuration | Macro-F1 | Accuracy | Comm (MB) | MIA |
+|---|---|---|---|---|
+| Full MedHE | 0.950 | 89.5% | 32 | 51.1% |
+| − Error feedback | 0.763 | 91.2% | 32 | 51.1% |
+| − Adaptive threshold | 0.773 | 91.2% | 32 | 51.1% |
+| − Batch packing | 0.950 | 89.5% | 415 | 51.1% |
+| − HE (sparsity only) | 0.755 | 90.9% | 26 | 56.3% |
+
+Error feedback and adaptive thresholding are essential (F1 drops ~19% when either
+is removed). Removing HE eliminates privacy while saving only 6MB.
+
+### Sparsity Sensitivity
+
+Optimal sparsity = 0.9 (90%):
+- s < 0.8: communication savings < 80%, no meaningful privacy benefit
+- s = 0.9: accuracy preserved, 97.5% comm reduction ✓
+- s > 0.95: accuracy drops below 85%
+
+---
+
+## MedHE Framework
+
+### Three-Component Architecture
+Client gradient G ∈ ℝᵈ
+↓
+Step 1: Adaptive Sparsification (top-10% by magnitude)
++ Error-feedback compensation (residual added next round)
++ EMA threshold τₜ = α·τₜ₋₁ + (1-α)·τcurrent, α=0.9
+↓
+Step 2: CKKS Batch Packing
+64 gradient values per ciphertext slot
+13 ciphertexts total (vs 800+ naive)
+Each ciphertext ≈ 0.47 MB
+Ring dimension N=8,192, 128-bit security (RLWE)
+↓
+Step 3: Differential Privacy
+Gaussian noise N(0, σ²I)
+ε ≤ 1.0, δ = 1×10⁻⁵ across T=3 rounds
+90% sparsity amplifies privacy by factor (1-s)=0.1
+↓
+Encrypted upload to aggregation server
+Server: ciphertext-domain weighted averaging → broadcast
+### Convergence
+
+Both MedHE and Standard FedAvg converge by round 3 of 10.
+Training time: 8.7 min (MedHE) vs 7.2 min (baseline) — only 21% overhead.
+
+---
+
+## Dataset
+
+**UCI Drug Review Dataset** (ID 461)
+- ~4,140 patient reviews of pharmaceutical drugs
+- Task: binary classification (effective if rating ≥ 3)
+- 86% majority class → macro-F1 is the primary metric (accuracy misleading)
+- Federated setup: 5 clients, equal partition (~660 samples each)
+- 3 communication rounds, 2 local epochs per round
+
+```python
+from ucimlrepo import fetch_ucirepo
+drug_review = fetch_ucirepo(id=461)
+```
+
+---
+
+## Quick Start
+
+```bash
+pip install transformers==4.41.2 torch==2.3.0 tenseal==0.3.16
+pip install scikit-learn pandas ucimlrepo
+```
+
+```python
+# Run the main notebook
+# CIBB'26 MedHE / notebook on Kaggle
+```
+
+**Key hyperparameters:**
+```python
+config = {
+    'num_clients': 5,
+    'fl_rounds': 3,
+    'epochs_per_client': 2,
+    'learning_rate': 1e-4,
+    'batch_size': 8,
+    'sparsity': 0.9,           # 90% gradient sparsification
+    'ckks_poly_degree': 8192,  # ring dimension
+    'dp_epsilon': 1.0,         # privacy budget
+    'dp_delta': 1e-5,
+}
+```
+
+---
+
+## Use with FairHealth
+
+```python
+from fairhealth.federated.privacy import (
+    clip_weights,
+    add_gaussian_noise,
+    sparsify,
+    dp_fedavg_aggregate,
 )
 
-# Run federated learning
-results = fl_framework.train(
-    num_rounds=3,
-    epochs_per_client=2,
-    learning_rate=1e-4
-)
+# 97.5% communication reduction
+sparse_w, rate = sparsify(weights, sparsity=0.975)
 
-# Evaluate privacy and performance
-privacy_metrics = fl_framework.evaluate_privacy()
-performance_metrics = fl_framework.evaluate_performance()
+# Differential privacy
+noisy_w = add_gaussian_noise(clip_weights(sparse_w), epsilon=1.0)
+```
 
-MedHE/
-├── CIBB'26.ipynb             # Main implementation notebook
-├── medhe_framework/              # Framework source code
-│   ├── __init__.py
-│   ├── federated_learning.py     # Core FL implementation
-│   ├── encryption.py            # CKKS homomorphic encryption
-│   ├── sparsification.py        # Adaptive gradient sparsification
-│   └── security_analysis.py     # Privacy attack evaluation
-├── papers/
-│   ├── medhe_CIBB'26.ipynb.pdf      # Conference paper
-│   └── medhe_technical.pdf      # Technical report
-├── results/                     # Experimental results
-│   ├── communication_analysis.png
-│   ├── privacy_evaluation.png
-│   └── scalability_analysis.png
-├── requirements.txt             # Python dependencies
-└── README.md
+---
 
-🎯 Reproducibility
+## Citation
 
-
-Environment Setup
-
-
-Python: 3.11.13
-PyTorch: 2.3.0
-Transformers: 4.41.2
-TenSEAL: 0.3.16 (Homomorphic Encryption)
-Hardware: Tesla V100 GPU (16GB) recommended
-
-Dataset
-
-UCI Drug Review Dataset (ID 461)
-4,142 patient reviews for drug effectiveness classification
-Binary classification: effective vs. ineffective treatments
-Hyperparameters
-{
-    "learning_rate": 1e-4,
-    "batch_size": 8,
-    "sparsity_level": 0.9,
-    "num_clients": 5,
-    "fl_rounds": 3,
-    "epochs_per_client": 2,
-    "non_iid_alpha": 0.1
+```bibtex
+@misc{yesmin2026medhe,
+  author = {Yesmin, Farjana},
+  title  = {MedHE: Communication-Efficient Privacy-Preserving Federated
+            Learning with Adaptive Gradient Sparsification for Healthcare},
+  note   = {Under review, CIBB 2026. Preprint: arXiv:2511.09043},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2511.09043}
 }
+```
 
+---
 
-🔬 Experimental Evaluation
-
-Privacy Attacks Evaluated
-
-Membership Inference Attacks (MIA)
-Model Inversion Attacks
-Property Inference Attacks
-Gradient Leakage Attacks
-Eavesdropping Attacks
-Performance Metrics
-
-Accuracy & F1 Score: Model utility preservation
-Communication Efficiency: Bytes transmitted per round
-Computational Overhead: Training time comparison
-Scalability Analysis: Performance with increasing clients
-
-🏛️ Regulatory Compliance
-
-MedHE is designed to support HIPAA compliance with:
-
-End-to-end encryption of all communications
-Formal differential privacy guarantees (ε ≤ 1.5)
-Comprehensive audit trails and access controls
-Secure key management protocols
-📈 Applications
-
-Healthcare Use Cases
-
-Multi-Hospital Collaborative Learning: COVID-19 outcome prediction across 10+ hospitals
-Pharmaceutical Research: Secure drug discovery without revealing proprietary compounds
-Public Health Surveillance: Population-level insights with individual privacy preservation
-
-Extended Applications
-
-Financial Services: Secure fraud detection across banks
-Legal AI: Confidential document analysis
-Government Analytics: Privacy-preserving public data analysis
-
-🔮 Future Work
-
-Post-Quantum Security: Integration with lattice-based cryptography
-Malicious Adversary Protection: Byzantine-robust aggregation
-Dynamic Sparsity Adjustment: Adaptive sparsity based on convergence metrics
-Hardware Acceleration: FPGA/GPU optimization for CKKS operations
-
-📚 Citation
-
-If you use MedHE in your research, please cite our SATML 2026 paper:
-@article{DBLP:journals/corr/abs-2511-09043,
-  author       = {Farjana Yesmin},
-  title        = {MedHE: Communication-Efficient Privacy-Preserving Federated Learning
-                  with Adaptive Gradient Sparsification for Healthcare},
-  journal      = {CoRR},
-  volume       = {abs/2511.09043},
-  year         = {2025},
-  url          = {https://doi.org/10.48550/arXiv.2511.09043},
-  doi          = {10.48550/ARXIV.2511.09043},
-  eprinttype   = {arXiv},
-  eprint       = {2511.09043},
-  timestamp    = {Sun, 04 Jan 2026 00:00:00 +0100},
-  biburl       = {https://dblp.org/rec/journals/corr/abs-2511-09043.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
-}
-
-🤝 Contributing
-
-We welcome contributions! Please see our Contributing Guidelines for details.
-
-📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-🆘 Support
-
-For questions and support:
-
-📧 Email: Farjanayesmin76@gmail.com
-💬 Issues: GitHub Issues
-📖 Documentation: Full Documentation
-
-MedHE: Building trustworthy AI for healthcare through privacy-preserving federated learning. 🛡️⚕️🤖
-
-
+**Author:** Farjana Yesmin · [farjana-yesmin.github.io](https://farjana-yesmin.github.io)
+· MIT License
